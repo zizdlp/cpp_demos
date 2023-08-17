@@ -1,0 +1,31 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+cc_binary(
+    name = "special_template",
+    srcs = ["special_template.cc"],
+    copts = [
+        "-std=c++17",
+    ],
+)
+
+
+cc_library(
+    name = "number_arr",
+    srcs = [
+        "NumberArr.cc",
+    ],
+    hdrs = [
+        "NumberArr.h",
+    ],
+)
+cc_binary(
+    name = "number_arr_test",
+    srcs = [
+        "NumberArrTest.cc",
+    ],
+    deps = [
+        "//templates:number_arr",
+    ],
+)

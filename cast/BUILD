@@ -9,3 +9,19 @@ cc_binary(
         "-std=c++17",
     ],
 )
+
+cc_binary(
+    name = "virtual",
+    srcs = ["virtual.cc"],
+    copts = [
+        "-std=c++17",
+    ],
+)
+
+cc_binary(
+    name = "virtual_base_class",
+    srcs = ["virtual_base_class.cc"],
+    copts = [
+        "-std=c++17",
+    ],
+)
