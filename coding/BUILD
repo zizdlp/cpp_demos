@@ -10,3 +10,29 @@ cc_binary(
         "-g",
     ],
 )
+cc_binary(
+    name = "findK",
+    srcs = ["findK.cc"],
+    copts = [
+        "-std=c++17",
+        "-g",
+    ],
+)
+cc_binary(
+    name = "demo",
+    srcs = ["demo.cc"],
+    copts = [
+        "-std=c++17",
+        "-g",
+    ],
+)
+
+
+cc_binary(
+    name = "leetcode1",
+    srcs = ["leetcode1.cc"],
+    copts = [
+        "-std=c++17",
+        "-g",
+    ],
+)
