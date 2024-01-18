@@ -20,3 +20,13 @@ cc_binary(
         "-g",
     ],
 )
+
+
+cc_binary(
+    name = "polymorphism",
+    srcs = ["polymorphism.cc"],
+    copts = [
+        "-std=c++17",
+        "-g",
+    ],
+)

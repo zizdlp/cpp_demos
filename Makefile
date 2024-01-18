@@ -4,7 +4,6 @@ debug:
 	bazel run //coding:coding
 demo:
 	bazel run //coding:demo
-
 leetcode:
 	bazel run //leetcode:$(TARGET)
 
