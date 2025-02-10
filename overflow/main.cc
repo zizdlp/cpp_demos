@@ -58,6 +58,38 @@ private:
     __int128_t value_;
 
 public:
+    // 从字符串构造
+    explicit Int128Decimal(const std::string& str) {
+        size_t dot_pos = str.find('.');
+        std::string int_part = str;
+        std::string frac_part = "0";
+
+        if (dot_pos != std::string::npos) {
+            int_part = str.substr(0, dot_pos);
+            frac_part = str.substr(dot_pos + 1);
+        }
+
+        // 转换整数部分
+        value_ = 0;
+        for (char ch : int_part) {
+            value_ = value_ * 10 + (ch - '0');
+        }
+
+        // 转换小数部分并处理精度
+        if (frac_part != "0") {
+            while (frac_part.length() < Scale) {
+                frac_part.push_back('0');
+            }
+
+            for (char ch : frac_part) {
+                value_ = value_ * 10 + (ch - '0');
+            }
+        }
+
+        // 将小数部分除以基数
+        value_ = value_ / (pow10(Scale));
+    }
+
     explicit Int128Decimal(__int128_t value) : value_(value) {}
     explicit Int128Decimal(double value) : value_(static_cast<__int128_t>(std::round(value * radix))) {}
 
@@ -80,6 +112,10 @@ public:
     // 重载加法运算符
     Int128Decimal operator+(const Int128Decimal& other) const {
         return Int128Decimal(value_ + other.value_);
+    }
+
+    Int128Decimal operator*(const Int128Decimal& other) const {
+        return Int128Decimal(value_ * other.value_);
     }
 
 
@@ -199,7 +235,19 @@ int main() {
     cout << dec3 << endl;            // 输出: 12.35
 
     // 执行性能测试：进行100000000次加法运算并打印执行时间
-    test_addition_performance<2>(100000000);
+    // test_addition_performance<2>(100000000);
 
+    Int128Decimal<0> lea(static_cast<__int128_t>(1234567891011121314)); // 表示123.45
+    Int128Decimal<0> oo(static_cast<__int128_t>(123)); // 表示123.45
+    cout << lea << endl;         // 输出: 123.45
+    auto res = lea * lea*lea * oo;
+    // res = res + res; // 溢出
+    // res = res.add_with_xor_check(res);//溢出
+    cout << res << endl;   
     return 0;
 }
+// -1494170892461123603124517523299406977.12
+// 995452838694632431271222824534854958.96
+// 1179287752893122690312702330683138034
+//99545283869463243127122282453485495896
+// -141191799182011977209130042524797219664
