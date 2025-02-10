@@ -82,6 +82,43 @@ public:
         return Int128Decimal(value_ + other.value_);
     }
 
+
+    // 第一种：没有溢出检查的普通加法
+    Int128Decimal add_no_overflow(const Int128Decimal& other) const {
+        return Int128Decimal(value_ + other.value_);
+    }
+
+    // 第二种：使用内建溢出检查的加法
+    Int128Decimal add_with_overflow(const Int128Decimal& other) const {
+        __int128_t result;
+        bool overflow = __builtin_add_overflow(value_, other.value_, &result);
+        if (overflow) {
+            throw std::overflow_error("Overflow occurred in add_with_overflow");
+        }
+        return Int128Decimal(result);
+    }
+
+    // 第三种：检查符号位的加法
+    Int128Decimal add_with_sign_check(const Int128Decimal& other) const {
+        __int128_t result = value_ + other.value_;
+        if (((value_ > 0) && (other.value_ > 0) && (result < 0)) || 
+            ((value_ < 0) && (other.value_ < 0) && (result > 0))) {
+            throw std::overflow_error("Overflow occurred in add_with_sign_check");
+        }
+        return Int128Decimal(result);
+    }
+    // 第三种：检查 XOR 加法溢出
+    Int128Decimal add_with_xor_check(const Int128Decimal& other) const {
+        __int128_t result = value_ + other.value_;
+
+        // 检查溢出：x ^ r 和 y ^ r 的符号位不同表示溢出
+        if (((value_ ^ result) & (other.value_ ^ result)) < 0) {
+            throw std::overflow_error("Overflow occurred in add_with_xor_check");
+        }
+
+        return Int128Decimal(result);
+    }
+
     friend std::ostream& operator<<(std::ostream& os, const Int128Decimal& dec) {
         __int128_t value = dec.value_;
         bool is_negative = false;
@@ -124,7 +161,10 @@ void test_addition_performance(int iterations) {
     // 执行加法运算
     Int128Decimal<Scale> result = dec1;
     for (int i = 0; i < iterations; ++i) {
-        result = result + dec2;
+        // result = result.add_no_overflow(dec2);//2.03s
+        // result = result.add_with_overflow(dec2);//2.7s
+        result = result.add_with_sign_check(dec2);//2.2s
+        // result = result.add_with_xor_check(dec2);//2.7s
     }
 
     // 获取结束时间
@@ -148,7 +188,6 @@ void test_addition_performance(int iterations) {
              << duration.count() << " microseconds." << endl;
     }
 }
-
 int main() {
     Int128Decimal<2> dec1(static_cast<__int128_t>(12345)); // 表示123.45
     cout << dec1 << endl;         // 输出: 123.45
