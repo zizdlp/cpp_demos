@@ -139,7 +139,7 @@ public:
         __int128_t result = value_ + other.value_;
         if (((value_ > 0) && (other.value_ > 0) && (result < 0)) || 
             ((value_ < 0) && (other.value_ < 0) && (result > 0))) {
-            throw std::overflow_error("Overflow occurred in add_with_sign_check");
+            // throw std::overflow_error("Overflow occurred in add_with_sign_check");
         }
         return Int128Decimal(result);
     }
@@ -149,7 +149,7 @@ public:
 
         // 检查溢出：x ^ r 和 y ^ r 的符号位不同表示溢出
         if (((value_ ^ result) & (other.value_ ^ result)) < 0) {
-            throw std::overflow_error("Overflow occurred in add_with_xor_check");
+            // throw std::overflow_error("Overflow occurred in add_with_xor_check");
         }
 
         return Int128Decimal(result);
@@ -224,6 +224,43 @@ void test_addition_performance(int iterations) {
              << duration.count() << " microseconds." << endl;
     }
 }
+
+// 测试加法运算的性能
+void test_addition_performanceB(int iterations,Int128Decimal<4> l, Int128Decimal<4>   r) {
+  
+    // 获取当前时间
+    auto start = high_resolution_clock::now();
+
+    // 执行加法运算
+    auto result = l;
+    for (int i = 0; i < iterations; ++i) {
+        // result = l.add_no_overflow(r);//2.03s
+        result = l.add_with_overflow(r);//2.7s
+        // result = l.add_with_sign_check(r);//2.2s
+        result = l.add_with_xor_check(r);//2.7s
+    }
+
+    // 获取结束时间
+    auto end = high_resolution_clock::now();
+    
+    // 计算持续时间
+    auto duration = duration_cast<microseconds>(end - start);
+    
+    // 打印结果，根据时间长短选择合适的单位
+    if (duration.count() >= 1000000) {
+        // 超过1秒，输出秒
+        cout << "Total time for " << iterations/10000 << "W iterations: " 
+             << duration.count() / 1000000.0 << " seconds." << endl;
+    } else if (duration.count() >= 1000) {
+        // 超过1毫秒，输出毫秒
+        cout << "Total time for " << iterations << " iterations: " 
+             << duration.count() / 1000.0 << " milliseconds." << endl;
+    } else {
+        // 否则，输出微秒
+        cout << "Total time for " << iterations << " iterations: " 
+             << duration.count() << " microseconds." << endl;
+    }
+}
 int main() {
     Int128Decimal<2> dec1(static_cast<__int128_t>(12345)); // 表示123.45
     cout << dec1 << endl;         // 输出: 123.45
@@ -237,13 +274,15 @@ int main() {
     // 执行性能测试：进行100000000次加法运算并打印执行时间
     // test_addition_performance<2>(100000000);
 
-    Int128Decimal<0> lea(static_cast<__int128_t>(1234567891011121314)); // 表示123.45
-    Int128Decimal<0> oo(static_cast<__int128_t>(123)); // 表示123.45
+    Int128Decimal<4> lea(static_cast<__int128_t>(12345678910111213233)); // 表示123.45
+    Int128Decimal<4> oo(static_cast<__int128_t>(123)); // 表示123.45
     cout << lea << endl;         // 输出: 123.45
-    auto res = lea * lea*lea * oo;
+    auto res = lea * lea*lea * oo*oo*lea*lea;
     // res = res + res; // 溢出
     // res = res.add_with_xor_check(res);//溢出
     cout << res << endl;   
+
+    test_addition_performanceB(10000000000,res,res);
     return 0;
 }
 // -1494170892461123603124517523299406977.12
